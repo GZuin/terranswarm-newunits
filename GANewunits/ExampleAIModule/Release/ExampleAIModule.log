@@ -1,0 +1,36 @@
+﻿Build started 16/06/2016 19:33:48.
+     1>Project "G:\terranswarm\GANewunits\ExampleAIModule\ExampleAIModule.vcxproj" on node 2 (build target(s)).
+     1>InitializeBuildStatus:
+         Touching "Release\GAMedicAIModule.unsuccessfulbuild".
+       ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\CL.exe /c /I../include /Zi /nologo /W3 /WX- /O2 /Oi /Oy- /GL /D WIN32 /D NDEBUG /D _WINDOWS /D _USRDLL /D EXAMPLEAIMODULE_EXPORTS /D "_SECURE_SCL 0" /D _WINDLL /D _UNICODE /D UNICODE /Gm- /EHsc /MD /GS /Gy /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Release\\" /Fd"Release\vc100.pdb" /Gd /TP /analyze- /errorReport:prompt Source\VultureAgent.cpp
+         VultureAgent.cpp
+       Link:
+         C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"G:\terranswarm\GANewunits\Release\GAMedicAIModule_release.dll" /INCREMENTAL:NO /NOLOGO ../lib/BWAPI.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /ManifestFile:"Release\GAMedicAIModule_release.dll.intermediate.manifest" /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /PDB:"G:\terranswarm\GANewunits\Release\GAMedicAIModule_release.pdb" /SUBSYSTEM:WINDOWS /OPT:REF /OPT:ICF /LTCG /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"G:\terranswarm\GANewunits\Release\GAMedicAIModule_release.lib" /MACHINE:X86 /DLL Release\CommanderAgent.obj
+         Release\Dll.obj
+         Release\ExampleAIModule.obj
+         Release\FirebatAgent.obj
+         Release\GeneticValues.obj
+         Release\GoliathAgent.obj
+         Release\MarineAgent.obj
+         Release\MedicAgent.obj
+         Release\Parameters.obj
+         Release\SCVAgent.obj
+         Release\Task.obj
+         Release\TaskAssociation.obj
+         Release\util.obj
+         Release\VultureAgent.obj
+            Creating library G:\terranswarm\GANewunits\Release\GAMedicAIModule_release.lib and object G:\terranswarm\GANewunits\Release\GAMedicAIModule_release.exp
+         Generating code
+         Finished generating code
+         ExampleAIModule.vcxproj -> G:\terranswarm\GANewunits\Release\GAMedicAIModule_release.dll
+       Manifest:
+         C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\bin\mt.exe /nologo /verbose /outputresource:"G:\terranswarm\GANewunits\Release\GAMedicAIModule_release.dll;#2" /manifest Release\GAMedicAIModule_release.dll.intermediate.manifest
+       FinalizeBuildStatus:
+         Deleting file "Release\GAMedicAIModule.unsuccessfulbuild".
+         Touching "Release\GAMedicAIModule.lastbuildstate".
+     1>Done Building Project "G:\terranswarm\GANewunits\ExampleAIModule\ExampleAIModule.vcxproj" (build target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:06.24

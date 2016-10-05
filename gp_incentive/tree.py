@@ -1,6 +1,9 @@
 import random
 import os
+import shutil
 import sys
+import subprocess
+
 
 ifs = []
 
@@ -9,7 +12,7 @@ ifs = []
 			'Current-Mineral','Time','TotalUnits','NumThisUnits',
 			'NumBases','NumSVC']							# possible terminals. Upper case means its derived from SC current state
 '''
-terminals = ['int','float','x','y','z']
+terminals = ['int','float','a','b','c','d','e','f','g','h','i']
 # float is a percentage [-1.0 , 1.0] // int is a value [-9999 , 9999]
 
 condoperands = ['>','<','>=','<=','==']                         # conditonal operands. Only usable as 'IF' middle child
@@ -102,10 +105,23 @@ class Tree():
             if(node.father != None):
                 node.updateHeight(node.father, newheight + 1)
 
-def printTree(node): #outdated
+
+def writeDefaultText(Outdll,dllname,mode):
+    if mode=='Pre':
+        Outdll.write("#include \"%s.h\"\n\nfloat DLL_EXPORT incentiveExp(float a, float b, float c, float d, float e, float f, float g, float h, float i)\n{\n\treturn(" % dllname)
+    elif mode=='Pos':
+        Outdll.write(");\n}\n\nextern \"C\" DLL_EXPORT BOOL APIENTRY DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)\n{\n")
+        Outdll.write("    switch (fdwReason)\n    {\n")
+        Outdll.write("        case DLL_PROCESS_ATTACH:\n            break;\n")
+        Outdll.write("        case DLL_PROCESS_DETACH:\n            break;\n")
+        Outdll.write("        case DLL_THREAD_ATTACH:\n            break;\n")
+        Outdll.write("        case DLL_THREAD_DETACH:\n            break;\n")
+        Outdll.write("    }\n    return TRUE; // succesful\n}")
+
+def printTree(node): 
     s = ""
-    for i in range(1,node.depth):
-        s = s + "\t"
+    #for i in range(1,node.depth):
+    #    s = s + "\t"
     print(s+str(node.value))
     if(node.middle != None):
         printTree(node.middle)
@@ -115,24 +131,18 @@ def printTree(node): #outdated
         printTree(node.right)
     return
 
-
-def printCTree(node): #outdated
-    s = ""
-    for i in range(1,node.depth):
-        s = s + "\t"
-    print(s+str(node.value))
-    if(node.middle != None):
-        printTree(node.middle)
-    if(node.left != None):
-        runandprintC(node.left)
-    if(node.right != None):
-        runandprintC(node.right)
+def printTreeToFile(Node,Input): 
+    Input.write(str(Node.value)+'\n')
+    if(Node.middle != None):
+        printTreeToFile(Node.middle,Input)
+    if(Node.left != None):
+        printTreeToFile(Node.left,Input)
+    if(Node.right != None):
+        printTreeToFile(Node.right,Input)
     return
 
-ifcounter = 0
 
-def printNode(Node):
-    global ifcounter
+def printC(Node):
     s=""
     #for i in range(1,Node.depth):
     #    s = s + "\t"
@@ -141,30 +151,71 @@ def printNode(Node):
         Node.setPrinted()
         return
     if Node.value=='IF':
-        this_if = ifcounter
-        ifcounter+=1
         #print "float "+Node.value+str(this_if)+'=0'
         #sys.stdout.write(s+Node.value + '(')
         Node.setPrinted()
         sys.stdout.write('(')
-        printNode(Node.middle)
+        printC(Node.middle)
         #sys.stdout.write('){\nreturn ')
         sys.stdout.write(' ? ')
-        printNode(Node.left)
+        printC(Node.left)
         #sys.stdout.write('}\nelse{\nreturn
         sys.stdout.write(' : ')
-        printNode(Node.right)
+        printC(Node.right)
         #sys.stdout.write( '}\n')
         sys.stdout.write(')')
         return
     
     sys.stdout.write('(')
-    printNode(Node.left)
+    printC(Node.left)
     sys.stdout.write(s+Node.getNodeValue())
-    printNode(Node.right)
+    printC(Node.right)
     sys.stdout.write(')')
     return
-        
+
+def createCDLL(Tree,cppname,dllpath,dllname):
+    shutil.copyfile('defaultheader.h',os.path.join(dllpath,cppname+'.h')) # copy header file, same for all
+    Outdll = open(os.path.join(dllpath,cppname+'.cpp'),'w') # open source file, will contain the new function
+    writeDefaultText(Outdll,cppname,'Pre')
+    printCToFile(Tree,Outdll)
+    writeDefaultText(Outdll,cppname,'Pos')
+    Outdll.close()
+    os.system("cl.exe /D_USRDLL /D_WINDLL %s.cpp /MT /link /DLL /OUT:%s.dll > log" % (os.path.join(dllpath,cppname), os.path.join(dllpath,dllname)))
+    #args = '/D_USRDLL /D_WINDLL %s.cpp /MT /link /DLL /OUT:%s.dll' % (os.path.join(dllpath,cppname), os.path.join(dllpath,dllname))
+    #subprocess.check_call(['cl.exe', args], stdout=os.devnull, stderr=subprocess.STDOUT)
+
+
+def printCToFile(Node,Input):
+    s=""
+    #for i in range(1,Node.depth):
+    #    s = s + "\t"
+    if Node.getLeftChild()==None:
+        Input.write(s+Node.getNodeValue())
+        Node.setPrinted()
+        return
+    if Node.value=='IF':
+        #print "float "+Node.value+str(this_if)+'=0'
+        #sys.stdout.write(s+Node.value + '(')
+        Node.setPrinted()
+        Input.write('(')
+        printCToFile(Node.middle,Input)
+        #sys.stdout.write('){\nreturn ')
+        Input.write(' ? ')
+        printCToFile(Node.left,Input)
+        #sys.stdout.write('}\nelse{\nreturn
+        Input.write(' : ')
+        printCToFile(Node.right,Input)
+        #sys.stdout.write( '}\n')
+        Input.write(')')
+        return
+    
+    Input.write('(')
+    printCToFile(Node.left,Input)
+    Input.write(s+Node.getNodeValue())
+    printCToFile(Node.right,Input)
+    Input.write(')')
+    return
+
     
 def iterate(node):
     Node = getFirst(node)
@@ -173,16 +224,6 @@ def iterate(node):
             Node.setNodeValue('IF'+str(len(ifs)))
             ifs.append(Node.getMiddleChild())
         Node = getNext(Node)
-
-def runandprintC(node):
-    Node = getFirst(node)
-    while (Node!=None):
-        print (Node.getNodeValue())
-        Node = getNext(Node)
-
-def oldprintTreeC(node):
-    iterate(node)
-    runandprintC(node)
 
 def getLeftMost(Node):
     n = Node
@@ -204,7 +245,6 @@ def getNext(Node):
     return n.getFather()    
 
 
-#TODO: FIX THIS TO NEW TREE KIND
 def growTree(Node,operatorProb,maxdepth):
 
     #Left Side
@@ -227,7 +267,7 @@ def growTree(Node,operatorProb,maxdepth):
         Node.left.right = None
 
 
-	#Middle Side
+    #Middle Side
     if(Node.value=='IF'):
 	Node.insertMiddle(random.choice(condoperands))
 	growTree(Node.middle,operatorProb,maxdepth)
@@ -254,45 +294,63 @@ def growTree(Node,operatorProb,maxdepth):
 def generateTreeFromFile(ifile):    
     value = ifile.readline()
     value = value[:-1]
+    tree = Tree(value)
+    
+    if (value in condoperands+adcdoperands+commoperands+ctrloperands):
+        growFromFile(tree,tree,ifile)
 
-    if (value=="+" or value=="-" or value=="*" or value=="/" or value=="exp"):
-        Tree = BinaryTree(value)
-    else:
-        Tree = BinaryTree(value)
-        return Tree
-
-    growFromFile(Tree,Tree,ifile)
-    return Tree
+    return tree
 
 def growFromFile(Root,Node,ifile):
+
+    #Middle Side
+    if (Node.value=="IF" and Node.middle == None):
+        value = ifile.readline()
+        value = value[:-1]
+        Node.insertMiddle(value)
+        growFromFile(Root,Node.middle,ifile)
+        #growFromFile(Root,Node.middle.right,ifile)
+        #return
 
     #Left Side
     value = ifile.readline()
     value = value[:-1]
 
-    if (value=="+" or value=="-" or value=="*" or value=="/" or value=="exp"):
+    if (value in condoperands+adcdoperands+commoperands+ctrloperands):
         Node.insertLeft(value)
         growFromFile(Root,Node.left,ifile)
     else:
         Node.insertLeft(value)
         Node.left.left = None
+        Node.left.middle = None
         Node.left.right = None
 
     #Right Side
     value = ifile.readline()
     value = value[:-1]
 
-    if (value=="+" or value=="-" or value=="*" or value=="/" or value=="exp"):
+    if (value in condoperands+adcdoperands+commoperands+ctrloperands):
         Node.insertRight(value)
         growFromFile(Root,Node.right,ifile)
     else:
         Node.insertRight(value)
         Node.right.left = None
+        Node.right.middle = None
         Node.right.right = None
 
 if __name__ == '__main__':
 	t = Tree('IF')
 	growTree(t,0.7,4)
-	printTree(t)
+        '''printTree(t)
+        i1 = open('tree.txt','w')
+        i2 = open('tree_c.txt','w')
+	printTreeToFile(t,i1)
 	print('------------------')
-        printNode(t)
+        printNodeToFile(t,i2)
+        i1.close()
+        i2.close()
+
+        newt = generateTreeFromFile(open('tree.txt','r'))
+        printTree(newt)
+        '''
+        createCDLL(t,'dlltest','dllex','incexp')
